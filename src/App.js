@@ -1,25 +1,58 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import logo from "./logo.svg";
+import Die from "./components/Die";
+import "./components/style.css";
+import { nanoid } from "nanoid";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+	const [dice, setDice] = React.useState(allNewDice());
+	function allNewDice() {
+		const newDice = [];
+		for (let i = 0; i < 10; i++) {
+			newDice.push({
+				value: Math.ceil(Math.random() * 6),
+				isHeld: true,
+				id: nanoid(),
+			});
+		}
+		return newDice;
+	}
 
+	function rollDice() {
+		setDice(allNewDice());
+	}
+	/**
+	 * Challenge: Update the `holdDice` function to flip
+	 * the `isHeld` property on the object in the array
+	 * that was clicked, based on the `id` prop passed
+	 * into the function.
+	 *
+	 * Hint: as usual, there's > 1 way to accomplish this.
+	 * I'll be using `dice.map()` and checking for the `id`
+	 * of the die to determine which one to flip `isHeld` on,
+	 * but you can do whichever way makes the most sense to you.
+	 */
+
+	function holdDice(id) {
+		console.log(id);
+	}
+
+	const diceElements = dice.map((die) => (
+		<Die
+			key={die.id}
+			value={die.value}
+			isHeld={die.isHeld}
+			holdDice={() => holdDice(die.id)}
+		/>
+	));
+
+	return (
+		<main>
+			<div className="dice-container">{diceElements}</div>
+			<button className="roll-dice" onClick={rollDice}>
+				Roll
+			</button>
+		</main>
+	);
+}
 export default App;
