@@ -8,14 +8,30 @@ import Confetti from "react-confetti";
 function App() {
 	const [dice, setDice] = useState(allNewDice());
 	const [tenzies, setTenzies] = useState(false);
+	const [roll, setRoll] = useState(1);
+	const [counter, setCounter] = useState(0);
+	const [bestTime, setBestTime] = useState(
+		localStorage.getItem("bestTime") || 0
+	);
 
+	useEffect(() => {
+		const timeout = setTimeout(() => setCounter(counter + 1), 1000);
+		return () => {
+			clearTimeout(timeout);
+		};
+	}, [counter]);
 	useEffect(() => {
 		const allHeld = dice.every((die) => die.isHeld);
 		const firstValue = dice[0].value;
 		const allSameValue = dice.every((die) => die.value === firstValue);
 		if (allHeld && allSameValue) {
 			setTenzies(true);
-			console.log("Congrat's You Won");
+
+			if (!bestTime) {
+				localStorage.setItem("bestTime", counter);
+			} else if (bestTime > counter) {
+				localStorage.setItem("bestTime", counter);
+			}
 		}
 	}, [dice]);
 	function generateNewDie() {
@@ -36,6 +52,7 @@ function App() {
 
 	function rollDice() {
 		if (!tenzies) {
+			setRoll((prevRoll) => prevRoll + 1);
 			setDice((oldDice) =>
 				oldDice.map((die) => {
 					return die.isHeld ? die : generateNewDie();
@@ -44,6 +61,8 @@ function App() {
 		} else {
 			setTenzies(false);
 			setDice(allNewDice());
+			setRoll(1);
+			setCounter(0);
 		}
 	}
 
@@ -78,9 +97,12 @@ function App() {
 				{tenzies ? "New Game" : "Roll"}
 			</button>
 			<div className="head--history">
-				<p>Rolls: 0</p>
-				<p>Best time: 00:22</p>
-				<p>Time: 00:00</p>
+				<label>Rolls: </label>
+				<p>{roll}</p>
+				<label>Best time: </label>
+				<p>{localStorage.getItem("bestTime")}</p>
+				<label>Time: </label>
+				<p>{counter}</p>
 			</div>
 		</main>
 	);
