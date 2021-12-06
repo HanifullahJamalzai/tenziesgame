@@ -1,40 +1,58 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import logo from "./logo.svg";
 import Die from "./components/Die";
 import "./components/style.css";
 import { nanoid } from "nanoid";
+import Confetti from "react-confetti";
 
 function App() {
-	const [dice, setDice] = React.useState(allNewDice());
+	const [dice, setDice] = useState(allNewDice());
+	const [tenzies, setTenzies] = useState(false);
+
+	useEffect(() => {
+		const allHeld = dice.every((die) => die.isHeld);
+		const firstValue = dice[0].value;
+		const allSameValue = dice.every((die) => die.value === firstValue);
+		if (allHeld && allSameValue) {
+			setTenzies(true);
+			console.log("Congrat's You Won");
+		}
+	}, [dice]);
+	function generateNewDie() {
+		return {
+			value: Math.ceil(Math.random() * 6),
+			isHeld: false,
+			id: nanoid(),
+		};
+	}
+
 	function allNewDice() {
 		const newDice = [];
 		for (let i = 0; i < 10; i++) {
-			newDice.push({
-				value: Math.ceil(Math.random() * 6),
-				isHeld: true,
-				id: nanoid(),
-			});
+			newDice.push(generateNewDie());
 		}
 		return newDice;
 	}
 
 	function rollDice() {
-		setDice(allNewDice());
+		if (!tenzies) {
+			setDice((oldDice) =>
+				oldDice.map((die) => {
+					return die.isHeld ? die : generateNewDie();
+				})
+			);
+		} else {
+			setTenzies(false);
+			setDice(allNewDice());
+		}
 	}
-	/**
-	 * Challenge: Update the `holdDice` function to flip
-	 * the `isHeld` property on the object in the array
-	 * that was clicked, based on the `id` prop passed
-	 * into the function.
-	 *
-	 * Hint: as usual, there's > 1 way to accomplish this.
-	 * I'll be using `dice.map()` and checking for the `id`
-	 * of the die to determine which one to flip `isHeld` on,
-	 * but you can do whichever way makes the most sense to you.
-	 */
 
 	function holdDice(id) {
-		console.log(id);
+		setDice((oldDice) =>
+			oldDice.map((die) => {
+				return die.id === id ? { ...die, isHeld: !die.isHeld } : die;
+			})
+		);
 	}
 
 	const diceElements = dice.map((die) => (
@@ -48,10 +66,22 @@ function App() {
 
 	return (
 		<main>
+			{tenzies && <Confetti />}
+
+			<h1 className="title">Tenzies</h1>
+			<p className="instructions">
+				Roll until all dice are the same. Click each die to freeze it at its
+				current value between rolls.
+			</p>
 			<div className="dice-container">{diceElements}</div>
 			<button className="roll-dice" onClick={rollDice}>
-				Roll
+				{tenzies ? "New Game" : "Roll"}
 			</button>
+			<div className="head--history">
+				<p>Rolls: 0</p>
+				<p>Best time: 00:22</p>
+				<p>Time: 00:00</p>
+			</div>
 		</main>
 	);
 }
